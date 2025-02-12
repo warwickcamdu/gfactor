@@ -11,10 +11,12 @@ list_C0=order_files(Array.filter(list,"C0.tif"));
 gfac_image=create_gfac(gfac_blue,dmso_blue,gfac_red,dmso_red);
 for (i = 0; i < list_C0.length; i++) {
 	open(input + File.separator + list_C0[i]);
+	run("32-bit");
 	run("Duplicate...", "ignore duplicate range=2-4");
 	title_C0=getTitle();
 	core_name=split(list_C0[i],"C");
 	open(input+File.separator+"C" + core_name[0] + "C1.tif");
+	run("32-bit");
 	run("Duplicate...", "ignore duplicate range=2-4");
 	title_C1=getTitle();
 	register_red(title_C0,title_C1,core_name,output);
@@ -35,10 +37,12 @@ function order_files(list){
 
 function create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core_name){
 	open(dmso_red);
+	run("32-bit");
 	dsmo_red_image=getTitle();
 	imageCalculator("Subtract create stack", title_C0,dsmo_red_image);
 	rename("red_aligned_bg");
 	open(dmso_blue);
+	run("32-bit");
 	dsmo_blue_image=getTitle();
 	imageCalculator("Subtract create stack", title_C1,dsmo_blue_image);
 	rename("blue_bg");
@@ -72,8 +76,10 @@ function register_red(title_C0,title_C1,core_name,output){
 
 function create_gfac(gfac_blue,dmso_blue,gfac_red,dmso_red){
 open(gfac_blue)
+run("32-bit");
 title_gfac=getTitle();
 open(dmso_blue)
+run("32-bit");
 title_dmso=getTitle();
 imageCalculator("Subtract create", title_gfac,title_dmso);
 rename("blueldn_bg");
@@ -81,8 +87,10 @@ selectWindow(title_gfac);
 selectWindow(title_dmso);
 
 open(gfac_red)
+run("32-bit");
 title_gfac=getTitle();
 open(dmso_red)
+run("32-bit");
 title_dmso=getTitle();
 imageCalculator("Subtract create", title_gfac,title_dmso);
 rename("redldn_bg");
@@ -93,7 +101,7 @@ imageCalculator("Subtract create", "blueldn_bg","redldn_bg");
 rename("gpmes_num");
 imageCalculator("Add create", "blueldn_bg","redldn_bg");
 rename("gpmes_denom");
-run("Calculator Plus", "i1=gpmes_num i2=gpmes_denom operation=[Divide: i2 = (i1/i2) x k1 + k2] k1=1000 k2=0 create");
+run("Calculator Plus", "i1=gpmes_num i2=gpmes_denom operation=[Divide: i2 = (i1/i2) x k1 + k2] k1=1 k2=0 create");
 rename("gpmes");
 selectImage("gpmes_num");
 close();
@@ -123,7 +131,7 @@ rename("gfac_denom");
 selectImage("gpmes.tif");
 close();
 
-run("Calculator Plus", "i1=gfac_num i2=gfac_denom operation=[Divide: i2 = (i1/i2) x k1 + k2] k1=1000 k2=0 create");
+run("Calculator Plus", "i1=gfac_num i2=gfac_denom operation=[Divide: i2 = (i1/i2) x k1 + k2] k1=1 k2=0 create");
 rename("gfac");
 saveAs("Tiff", output+File.separator+"gfac.tif");
 gfac_name=getTitle();

@@ -3,7 +3,7 @@
  */
 
 #@ File (label = "Input directory", style = "directory") input
-#@ File (label = "Output without suffix") output
+#@ File (label = "Output with filename but no suffix") output
 #@ String (label = "File suffix", value = ".tif") suffix
 #@ boolean (label = "Find and keep 2, 3 and 4 planes only?") checkbox
 

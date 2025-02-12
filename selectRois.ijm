@@ -18,6 +18,7 @@
 		run("TIFF Virtual Stack...", "open=["+input_blue+File.separator+bluelist[i]+"]");
 		blue_stack=getTitle();
 		run("Duplicate...", "title=blue_substack duplicate range=2-4");
+		run("32-bit");
 		selectWindow(blue_stack);
 		close();
 		if (i==0){
