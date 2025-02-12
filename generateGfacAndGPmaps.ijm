@@ -1,4 +1,5 @@
-#@ File (label = "Input directory", style = "directory") input
+#@ File (label = "Input image directory", style = "directory") input
+#@ File (label = "Input cellmask directory", style = "directory") cellmask_input
 #@ File (label = "Gfac blue") gfac_blue
 #@ File (label = "Gfac red") gfac_red
 #@ File (label = "DMSO blue") dmso_blue
@@ -19,9 +20,17 @@ for (i = 0; i < list_C0.length; i++) {
 	run("32-bit");
 	run("Duplicate...", "ignore duplicate range=2-4");
 	title_C1=getTitle();
+	open(cellmask_input+File.separator+"cellmask_C" + core_name[0] + "C1.tif");
+	cellmask=getTitle();
+	selectImage(cellmask);
+	run("Label Map to ROIs", "connectivity=C4 vertex_location=Corners name_pattern=r%03d");
+	roiManager("deselect");
+	num_cell=roiManager("count");
+	roiManager("Combine");
+	roiManager("Add");
 	register_red(title_C0,title_C1,core_name,output);
 	title_C0=getTitle();
-	create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core_name);
+	create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core_name,num_cell);
 }
 
 function order_files(list){
@@ -35,7 +44,7 @@ function order_files(list){
 	return list;
 }
 
-function create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core_name){
+function create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core_name,num_cell){
 	open(dmso_red);
 	run("32-bit");
 	dsmo_red_image=getTitle();
@@ -47,6 +56,8 @@ function create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core
 	imageCalculator("Subtract create stack", title_C1,dsmo_blue_image);
 	rename("blue_bg");
 	imageCalculator("Multiply create stack", "red_aligned_bg",gfac_image);
+	image=getTitle();
+	clear_bg_and_set_LUT(image,num_cell)
 	saveAs("Tiff", output+File.separator+"C" + core_name[0]+"C0-gfac.tif");
 	rename("red-gfac");
 	imageCalculator("Subtract create stack", "blue_bg","red-gfac");
@@ -54,6 +65,8 @@ function create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core
 	imageCalculator("Add create stack", "blue_bg","red-gfac");
 	rename("gpmap_denom");
 	imageCalculator("Divide create stack", "gpmap_nom","gpmap_denom");
+	image=getTitle();
+	clear_bg_and_set_LUT(image,num_cell)
 	saveAs("Tiff", output+File.separator+"C" + core_name[0]+"GPmap.tif");
 	selectWindow(gfac_image);
 	close("\\Others");
@@ -139,3 +152,13 @@ close("\\Others");
 return gfac_name;
 }
 
+
+function clear_bg_and_set_LUT(image,num_cell){
+selectImage(image);
+roiManager("Select", num_cell);
+run("Make Inverse");
+run("Set...", "value=NaN stack");
+run("Select None");
+run("mpl-viridis");
+run("Save");
+}
