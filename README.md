@@ -3,6 +3,8 @@ Laura Cooper, camdu@warwick.ac.uk
 
 ImageJ macros to calculate gfactor and gmap values for cell images
 
+Requires: [MorphoLibJ](https://imagej.net/plugins/morpholibj), [MultiStackReg](https://github.com/miura/MultiStackRegistration), [ijl-utilities-wrappers](https://github.com/BIOP/ijl-utilities-wrappers) for [cellpose](https://github.com/MouseLand/cellpose)
+
 ## Auto_cellseg
 
 Uses cellpose to automatically segment cells.
@@ -28,3 +30,5 @@ P. Thévenaz, U.E. Ruttimann, M. Unser, A Pyramid Approach to Subpixel Registrat
 Stringer, C., Wang, T., Michaelos, M., & Pachitariu, M. (2021). Cellpose: a generalist algorithm for cellular segmentation. Nature methods, 18(1), 100-106.
 
 Stringer, C. & Pachitariu, M. (2024). Cellpose3: one-click image restoration for improved segmentation. bioRxiv.
+
+David Legland, Ignacio Arganda-Carreras, Philippe Andrey, MorphoLibJ: integrated library and plugins for mathematical morphology with ImageJ, Bioinformatics, Volume 32, Issue 22, November 2016, Pages 3532–3534, https://doi.org/10.1093/bioinformatics/btw413
