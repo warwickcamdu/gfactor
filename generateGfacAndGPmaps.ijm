@@ -31,6 +31,7 @@ for (i = 0; i < list_C0.length; i++) {
 	register_red(title_C0,title_C1,core_name,output);
 	title_C0=getTitle();
 	create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core_name,num_cell);
+	roiManager("reset");
 }
 
 function order_files(list){
@@ -57,7 +58,7 @@ function create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core
 	rename("blue_bg");
 	imageCalculator("Multiply create stack", "red_aligned_bg",gfac_image);
 	image=getTitle();
-	clear_bg_and_set_LUT(image,num_cell)
+	clear_bg_and_set_LUT(image,num_cell);
 	saveAs("Tiff", output+File.separator+"C" + core_name[0]+"C0-gfac.tif");
 	rename("red-gfac");
 	imageCalculator("Subtract create stack", "blue_bg","red-gfac");
@@ -66,7 +67,7 @@ function create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core
 	rename("gpmap_denom");
 	imageCalculator("Divide create stack", "gpmap_nom","gpmap_denom");
 	image=getTitle();
-	clear_bg_and_set_LUT(image,num_cell)
+	clear_bg_and_set_LUT(image,num_cell);
 	saveAs("Tiff", output+File.separator+"C" + core_name[0]+"GPmap.tif");
 	selectWindow(gfac_image);
 	close("\\Others");
@@ -84,7 +85,7 @@ function register_red(title_C0,title_C1,core_name,output){
 	setBatchMode(true);
 	}
 	selectWindow(title_C0);
-	save(output+File.separator+"C" + core_name[0]+"C0-aligned.tif");
+	saveAs("Tiff",output+File.separator+"C" + core_name[0]+"C0-aligned.tif");
 }
 
 function create_gfac(gfac_blue,dmso_blue,gfac_red,dmso_red){
@@ -160,5 +161,4 @@ run("Make Inverse");
 run("Set...", "value=NaN stack");
 run("Select None");
 run("mpl-viridis");
-run("Save");
 }
