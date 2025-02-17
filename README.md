@@ -7,7 +7,7 @@ Requires: [MorphoLibJ](https://imagej.net/plugins/morpholibj), [MultiStackReg](h
 
 ## Auto_cellseg
 
-Uses cellpose to automatically segment cells.
+Uses cellpose to automatically segment cells. Need to run this before generateGfacAndGPmaps.
 
 ## ConcatenateSlices2to4
 
@@ -15,7 +15,7 @@ Takes slices 2-4 from a series of tif stacks and combines them into a hyperstack
 
 ## generateGfacAndGPmaps
 
-Takes blue and red image stacks and and calculated gfactor and gpmaps. Does a registers the two camera images using MultiStackReg.
+Takes blue and red image stacks and and calculated gfactor and gpmaps. Does a registers the two camera images using MultiStackReg. Need to run this before selectRois.
 
 ## selectRois
 
