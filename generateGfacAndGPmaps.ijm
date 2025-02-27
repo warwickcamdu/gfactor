@@ -65,6 +65,7 @@ function create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core
 	rename("gpmap_nom");
 	imageCalculator("Add create stack", "blue_bg","red-gfac");
 	rename("gpmap_denom");
+	saveAs("Tiff", output+File.separator+"C" + core_name[0]+"total_intensity.tif");
 	imageCalculator("Divide create stack", "gpmap_nom","gpmap_denom");
 	image=getTitle();
 	clear_bg_and_set_LUT(image,num_cell);
