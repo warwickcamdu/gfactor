@@ -15,16 +15,18 @@ for (i = 0; i < list_C0.length; i++) {
 	run("32-bit");
 	run("Duplicate...", "ignore duplicate range=2-4");
 	title_C0=getTitle();
-	core_name_string=split(list_C0[i],"C");
+	core_name=split(list_C0[i],"C");
 	core_name_string="";
-	for (i = 0; i < core_name_string.length-1; i++) {
-		core_name_string = core_name_string+"C"+core_name_string[i];
+	for (i = 0; i < core_name.length-1; i++) {
+		core_name_string = core_name_string+"C"+core_name[i];
 	}
+	print(core_name_string);
+	print(input+File.separator+core_name_string + "C1.tif");
 	open(input+File.separator+core_name_string + "C1.tif");
 	run("32-bit");
 	run("Duplicate...", "ignore duplicate range=2-4");
 	title_C1=getTitle();
-	open(cellmask_input+File.separator+"cellmask_C" + core_name_string[0] + "C1.tif");
+	open(cellmask_input+File.separator+"cellmask_" + core_name_string + "C1.tif");
 	cellmask=getTitle();
 	selectImage(cellmask);
 	run("Label Map to ROIs", "connectivity=C4 vertex_location=Corners name_pattern=r%03d");
@@ -79,7 +81,7 @@ function create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core
 }
 
 function register_red(title_C0,title_C1,core_name_string,output){
-	run("MultiStackReg", "stack_1=["+title_C1+"] action_1=[Use as Reference] file_1=[] stack_2=["+title_C0+"] action_2=[Align to First Stack] file_2=["+output+File.separator+"C"+core_name_string[0]+"_TransformationMatrix.txt"+"] transformation=[Rigid Body] save");
+	run("MultiStackReg", "stack_1=["+title_C1+"] action_1=[Use as Reference] file_1=[] stack_2=["+title_C0+"] action_2=[Align to First Stack] file_2=["+output+File.separator+core_name_string+"_TransformationMatrix.txt"+"] transformation=[Rigid Body] save");
 	if (i==0){
 	//display the first as composite and check user happy.
 	selectWindow(title_C0);
