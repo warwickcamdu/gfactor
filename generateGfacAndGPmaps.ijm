@@ -15,12 +15,16 @@ for (i = 0; i < list_C0.length; i++) {
 	run("32-bit");
 	run("Duplicate...", "ignore duplicate range=2-4");
 	title_C0=getTitle();
-	core_name=split(list_C0[i],"C");
-	open(input+File.separator+"C" + core_name[0] + "C1.tif");
+	core_name_string=split(list_C0[i],"C");
+	core_name_string="";
+	for (i = 0; i < core_name_string.length-1; i++) {
+		core_name_string = core_name_string+"C"+core_name_string[i];
+	}
+	open(input+File.separator+core_name_string + "C1.tif");
 	run("32-bit");
 	run("Duplicate...", "ignore duplicate range=2-4");
 	title_C1=getTitle();
-	open(cellmask_input+File.separator+"cellmask_C" + core_name[0] + "C1.tif");
+	open(cellmask_input+File.separator+"cellmask_C" + core_name_string[0] + "C1.tif");
 	cellmask=getTitle();
 	selectImage(cellmask);
 	run("Label Map to ROIs", "connectivity=C4 vertex_location=Corners name_pattern=r%03d");
@@ -28,9 +32,9 @@ for (i = 0; i < list_C0.length; i++) {
 	num_cell=roiManager("count");
 	roiManager("Combine");
 	roiManager("Add");
-	register_red(title_C0,title_C1,core_name,output);
+	register_red(title_C0,title_C1,core_name_string,output);
 	title_C0=getTitle();
-	create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core_name,num_cell);
+	create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core_name_string,num_cell);
 	roiManager("reset");
 }
 
@@ -45,7 +49,7 @@ function order_files(list){
 	return list;
 }
 
-function create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core_name,num_cell){
+function create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core_name_string,num_cell){
 	open(dmso_red);
 	run("32-bit");
 	dsmo_red_image=getTitle();
@@ -59,23 +63,23 @@ function create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core
 	imageCalculator("Multiply create stack", "red_aligned_bg",gfac_image);
 	image=getTitle();
 	clear_bg_and_set_LUT(image,num_cell);
-	saveAs("Tiff", output+File.separator+"C" + core_name[0]+"C0-gfac.tif");
+	saveAs("Tiff", output+File.separator+core_name_string+"C0-gfac.tif");
 	rename("red-gfac");
 	imageCalculator("Subtract create stack", "blue_bg","red-gfac");
 	rename("gpmap_nom");
 	imageCalculator("Add create stack", "blue_bg","red-gfac");
 	rename("gpmap_denom");
-	saveAs("Tiff", output+File.separator+"C" + core_name[0]+"total_intensity.tif");
+	saveAs("Tiff", output+File.separator+core_name_string+"total_intensity.tif");
 	imageCalculator("Divide create stack", "gpmap_nom","gpmap_denom");
 	image=getTitle();
 	clear_bg_and_set_LUT(image,num_cell);
-	saveAs("Tiff", output+File.separator+"C" + core_name[0]+"GPmap.tif");
+	saveAs("Tiff", output+File.separator+core_name_string+"GPmap.tif");
 	selectWindow(gfac_image);
 	close("\\Others");
 }
 
-function register_red(title_C0,title_C1,core_name,output){
-	run("MultiStackReg", "stack_1=["+title_C1+"] action_1=[Use as Reference] file_1=[] stack_2=["+title_C0+"] action_2=[Align to First Stack] file_2=["+output+File.separator+"C"+core_name[0]+"_TransformationMatrix.txt"+"] transformation=[Rigid Body] save");
+function register_red(title_C0,title_C1,core_name_string,output){
+	run("MultiStackReg", "stack_1=["+title_C1+"] action_1=[Use as Reference] file_1=[] stack_2=["+title_C0+"] action_2=[Align to First Stack] file_2=["+output+File.separator+"C"+core_name_string[0]+"_TransformationMatrix.txt"+"] transformation=[Rigid Body] save");
 	if (i==0){
 	//display the first as composite and check user happy.
 	selectWindow(title_C0);
@@ -86,7 +90,7 @@ function register_red(title_C0,title_C1,core_name,output){
 	setBatchMode(true);
 	}
 	selectWindow(title_C0);
-	saveAs("Tiff",output+File.separator+"C" + core_name[0]+"C0-aligned.tif");
+	saveAs("Tiff",output+File.separator+core_name_string+"C0-aligned.tif");
 }
 
 function create_gfac(gfac_blue,dmso_blue,gfac_red,dmso_red){
