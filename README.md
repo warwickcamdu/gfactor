@@ -5,17 +5,17 @@ ImageJ macros to calculate gfactor and gmap values for cell images
 
 Requires: [MorphoLibJ](https://imagej.net/plugins/morpholibj), [MultiStackReg](https://github.com/miura/MultiStackRegistration), [ijl-utilities-wrappers](https://github.com/BIOP/ijl-utilities-wrappers) for [cellpose](https://github.com/MouseLand/cellpose)
 
+## 1. RegisterAndConcat
+
+Register the image stacks and concatenate the different stacks to a single hyperstack. Run this before Auto_cellseg.
+
 ## Auto_cellseg
 
 Uses cellpose to automatically segment cells. Need to run this before generateGfacAndGPmaps.
 
-## ConcatenateSlices2to4
-
-Takes slices 2-4 from a series of tif stacks and combines them into a hyperstack.
-
 ## generateGfacAndGPmaps
 
-Takes blue and red image stacks and and calculated gfactor and gpmaps. Does a registers the two camera images using MultiStackReg. Need to run this before selectRois.
+Takes blue and red image stacks and and calculated gfactor and gpmaps. Need to run this before selectRois.
 
 ## selectRois
 
