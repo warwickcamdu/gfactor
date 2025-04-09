@@ -1,57 +1,36 @@
-#@ File (label = "Input image directory", style = "directory") input
-#@ File (label = "Input cellmask directory", style = "directory") cellmask_input
-#@ File (label = "Gfac blue") gfac_blue
+#@ File (label = "Input registered red image stack") input_C0
+#@ File (label = "Input blue image stack") input_C1
+#@ File (label = "Input cellmask stack") cellmask_input
 #@ File (label = "Gfac red") gfac_red
-#@ File (label = "DMSO blue") dmso_blue
+#@ File (label = "Gfac blue") gfac_blue
 #@ File (label = "DMSO red") dmso_red
+#@ File (label = "DMSO blue") dmso_blue
 #@ File (label = "Output directory", style = "directory") output
 
 close("*");
-list = getFileList(input);
-list_C0=order_files(Array.filter(list,"C0.tif"));
 gfac_image=create_gfac(gfac_blue,dmso_blue,gfac_red,dmso_red);
-for (i = 0; i < list_C0.length; i++) {
-	open(input + File.separator + list_C0[i]);
-	run("32-bit");
-	run("Duplicate...", "ignore duplicate range=2-4");
-	title_C0=getTitle();
-	core_name=split(list_C0[i],"C");
-	core_name_string="";
-	for (i = 0; i < core_name.length-1; i++) {
-		core_name_string = core_name_string+"C"+core_name[i];
-	}
-	print(core_name_string);
-	print(input+File.separator+core_name_string + "C1.tif");
-	open(input+File.separator+core_name_string + "C1.tif");
-	run("32-bit");
-	run("Duplicate...", "ignore duplicate range=2-4");
-	title_C1=getTitle();
-	open(cellmask_input+File.separator+"cellmask_" + core_name_string + "C1.tif");
-	cellmask=getTitle();
-	selectImage(cellmask);
-	run("Label Map to ROIs", "connectivity=C4 vertex_location=Corners name_pattern=r%03d");
-	roiManager("deselect");
-	num_cell=roiManager("count");
-	roiManager("Combine");
-	roiManager("Add");
-	register_red(title_C0,title_C1,core_name_string,output);
-	title_C0=getTitle();
-	create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core_name_string,num_cell);
-	roiManager("reset");
+open(input_C0);
+C0stack=getTitle();
+run("32-bit");
+open(input_C1);
+C1stack=getTitle();
+run("32-bit");
+core_name_string="test"
+create_gmap(C0stack,C1stack,dmso_red,dmso_blue,gfac_image,output,core_name_string);
+open(cellmask_input);
+cellmask_stack=getTitle();
+for (i = 1; i <= nSlices; i++) {
+    setSlice(i);
+    run("Label Map to ROIs", "connectivity=C4 vertex_location=Corners name_pattern=z"+i+"_r%03d");
 }
+selectWindow(cellmask_stack);
+close();
+clear_bg_set_LUT_and_save("C0-gfac")
+clear_bg_set_LUT_and_save("total_intensity")
+clear_bg_set_LUT_and_save("GPmap")
+close("*");
 
-function order_files(list){
-	numbers=newArray(list.length);
-	for(l=0; l<list.length; l++){
-		index = lastIndexOf(list[l], "-");
-		number = IJ.pad(substring(list[l], index+2),10);
-		numbers[l]=number;
-	}
-	Array.sort(numbers, list);
-	return list;
-}
-
-function create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core_name_string,num_cell){
+function create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core_name_string){
 	open(dmso_red);
 	run("32-bit");
 	dsmo_red_image=getTitle();
@@ -64,36 +43,15 @@ function create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core
 	rename("blue_bg");
 	imageCalculator("Multiply create stack", "red_aligned_bg",gfac_image);
 	image=getTitle();
-	clear_bg_and_set_LUT(image,num_cell);
-	saveAs("Tiff", output+File.separator+core_name_string+"C0-gfac.tif");
-	rename("red-gfac");
-	imageCalculator("Subtract create stack", "blue_bg","red-gfac");
+	rename("C0-gfac");
+	imageCalculator("Subtract create stack", "blue_bg","C0-gfac");
 	rename("gpmap_nom");
-	imageCalculator("Add create stack", "blue_bg","red-gfac");
-	rename("gpmap_denom");
-	saveAs("Tiff", output+File.separator+core_name_string+"total_intensity.tif");
-	imageCalculator("Divide create stack", "gpmap_nom","gpmap_denom");
-	image=getTitle();
-	clear_bg_and_set_LUT(image,num_cell);
-	saveAs("Tiff", output+File.separator+core_name_string+"GPmap.tif");
-	selectWindow(gfac_image);
-	close("\\Others");
+	imageCalculator("Add create stack", "blue_bg","C0-gfac");
+	rename("total_intensity");
+	imageCalculator("Divide create stack", "gpmap_nom","total_intensity");
+	rename("GPmap");
 }
 
-function register_red(title_C0,title_C1,core_name_string,output){
-	run("MultiStackReg", "stack_1=["+title_C1+"] action_1=[Use as Reference] file_1=[] stack_2=["+title_C0+"] action_2=[Align to First Stack] file_2=["+output+File.separator+core_name_string+"_TransformationMatrix.txt"+"] transformation=[Rigid Body] save");
-	if (i==0){
-	//display the first as composite and check user happy.
-	selectWindow(title_C0);
-	run("Merge Channels...", "c1=["+title_C0+"] c2=["+title_C1+"] create keep");
-	run("Brightness/Contrast...");
-	waitForUser("Happy with result? Click OK to proceed");
-	close();
-	setBatchMode(true);
-	}
-	selectWindow(title_C0);
-	saveAs("Tiff",output+File.separator+core_name_string+"C0-aligned.tif");
-}
 
 function create_gfac(gfac_blue,dmso_blue,gfac_red,dmso_red){
 open(gfac_blue)
@@ -161,11 +119,42 @@ return gfac_name;
 }
 
 
-function clear_bg_and_set_LUT(image,num_cell){
-selectImage(image);
-roiManager("Select", num_cell);
-run("Make Inverse");
-run("Set...", "value=NaN stack");
-run("Select None");
-run("mpl-viridis");
+function clear_bg_set_LUT_and_save(image){
+	selectImage(image);
+	Stack.getDimensions(width, height, channels, slices, frames);
+	for (i = 1; i <= frames; i++) {
+    	roiArray=findRoisWithName("z"+i+"_");
+    	roiManager("Select", roiArray);	
+    	roiManager("combine");
+    	run("Make Inverse");
+    	for (j = 1; j <= 3; j++) {
+    		//selectImage(image);
+    		Stack.setPosition(1, j, i);
+    		run("Set...", "value=NaN slice");
+		}
+		run("Select None");
+	}
+	run("mpl-viridis");
+	saveAs("Tiff", output+File.separator+image+".tif");
 }
+
+function findRoisWithName(roiName) { 
+	nR = roiManager("Count"); 
+	roiIdx = newArray(nR); 
+	k=0; 
+	clippedIdx = newArray(0); 
+	 
+	for (i=0; i<nR; i++) { 
+		roiManager("Select", i); 
+		rName = Roi.getName(); 
+		if (rName.startsWith(roiName)) { 
+			roiIdx[k] = i; 
+			k++; 
+		} 
+	} 
+	if (k>0) { 
+		clippedIdx = Array.trim(roiIdx,k); 
+	} 
+	 
+	return clippedIdx; 
+} 
