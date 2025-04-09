@@ -128,7 +128,6 @@ function clear_bg_set_LUT_and_save(image){
     	roiManager("combine");
     	run("Make Inverse");
     	for (j = 1; j <= 3; j++) {
-    		//selectImage(image);
     		Stack.setPosition(1, j, i);
     		run("Set...", "value=NaN slice");
 		}
@@ -136,6 +135,8 @@ function clear_bg_set_LUT_and_save(image){
 	}
 	run("mpl-viridis");
 	saveAs("Tiff", output+File.separator+image+".tif");
+	run("Calibration Bar...", "location=[Separate Image] fill=White label=Black number=5 decimal=1 font=12 zoom=3 overlay");
+	saveAs("Tiff", output+File.separator+image+"_cbar.tif");
 }
 
 function findRoisWithName(roiName) { 
