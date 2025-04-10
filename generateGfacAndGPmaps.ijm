@@ -13,10 +13,10 @@ open(input_C0);
 C0stack=getTitle();
 run("32-bit");
 open(input_C1);
-C1stack=getTitle();
+rename("C1_crop");
 run("32-bit");
 core_name_string="test"
-create_gmap(C0stack,C1stack,dmso_red,dmso_blue,gfac_image,output,core_name_string);
+create_gmap(C0stack,"C1_crop",dmso_red,dmso_blue,gfac_image,output,core_name_string);
 open(cellmask_input);
 cellmask_stack=getTitle();
 for (i = 1; i <= nSlices; i++) {
@@ -25,9 +25,10 @@ for (i = 1; i <= nSlices; i++) {
 }
 selectWindow(cellmask_stack);
 close();
-clear_bg_set_LUT_and_save("C0-gfac")
-clear_bg_set_LUT_and_save("total_intensity")
-clear_bg_set_LUT_and_save("GPmap")
+clear_bg_set_LUT_and_save("C0-gfac");
+clear_bg_set_LUT_and_save("total_intensity");
+clear_bg_set_LUT_and_save("GPmap");
+clear_bg_set_LUT_and_save("C1_crop");
 close("*");
 
 function create_gmap(title_C0,title_C1,dmso_red,dmso_blue,gfac_image,output,core_name_string){
