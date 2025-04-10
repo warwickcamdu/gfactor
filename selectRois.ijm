@@ -1,32 +1,18 @@
-#@ File (label = "Red directory", style = "directory") input_red
-#@ File (label = "Cell mask directory", style = "directory") input_cellmask
-#@ File (label = "Blue directory", style = "directory") input_blue
+#@ File (label = "Red gfac stack") input_red
+#@ File (label = "Cell mask stack") input_cellmask
+#@ File (label = "Blue cropped stack") input_blue
 #@ File (label = "Output directory", style = "directory") output
-#@ String (label = "Red file suffix", value = "gfac.tif") suffix
 #@ int(label = "Square size", default=30) box_size
-
-	bluelist = getFileList(input_blue);
-	bluelist = Array.sort(bluelist);
-	bluelist = Array.filter(bluelist,"1.tif");
-	cellmasklist = getFileList(input_cellmask);
-	cellmasklist = Array.sort(cellmasklist);
-	cellmasks = Array.filter(cellmasklist,"cellmask");
-	for (i = 0; i < bluelist.length; i++) {
-		subname=split(bluelist[i],".");
-		subname=substring(subname[0], 0, lengthOf(subname[0])-1);
-		red_name=subname+"0-"+suffix;
-		run("TIFF Virtual Stack...", "open=["+input_blue+File.separator+bluelist[i]+"]");
+	
+		open(input_blue);
 		blue_stack=getTitle();
-		run("Duplicate...", "title=blue_substack duplicate range=2-4");
-		run("32-bit");
-		selectWindow(blue_stack);
-		close();
-		if (i==0){
-			getPixelSize(unit, pixelWidth, pixelHeight);
-		}
-		open(input_cellmask+File.separator+cellmasks[i]);
+		subname=substring(blue_stack,0,lengthOf(blue_stack)-4);
+		getPixelSize(unit, pixelWidth, pixelHeight);
+		open(input_cellmask);
 		cellmask_image=getTitle();
-		selectWindow("blue_substack");
+		run("Specify...", "width=2200 height=2200 x=100 y=100 slice=1");
+		run("Crop");
+		selectWindow(blue_stack);
 		setTool("multipoint");
 		waitForUser("Select Points", "Add multipoints to ROI manager, click OK when done");
 		while (roiManager("count")<1){
@@ -34,35 +20,48 @@
 		}
 		roiManager("deselect");
 		run("Set Measurements...", "centroid stack redirect=None decimal=9");
-		roiManager("measure");
+		roiManager("Measure");
 		count = nResults();
 		for (j = 0; j < count; j++) {
     		x = getResult('X', j);
     		y = getResult('Y', j);
+    		sample = getResult('Frame',j);
+    		z = getResult('Slice',j);
     		makeRectangle(um2px(x,pixelWidth)-box_size/2, um2px(y,pixelWidth)-box_size/2, box_size, box_size);
+    		Roi.setPosition(1, z, sample);
     		roiManager("Add");
 		}
-		roiManager("Select", 0);
+		roiManager("Select", newArray(count));
 		roiManager("Delete");
 		roiManager("deselect");
 		roiManager("Save", output+File.separator+subname+"_rois.zip");
+		IJ.renameResults("ROI positions");
+
 		Table.create(subname);
-		selectWindow("Results");
-		run("Close");
-		selectWindow("blue_substack");
+		selectWindow(blue_stack);
 		run("Set Measurements...", "mean stack display redirect=None decimal=9");
 		roiManager("measure");
 		IJ.renameResults("blue_measurments");
-		selectWindow(cellmask_image);
-		run("Set Measurements...", "mean min display redirect=None decimal=9");
-		roiManager("measure");
-		IJ.renameResults("cell_labels");
-		slice=Table.get("Slice",0,"blue_measurments");
-		open(input_red+File.separator+red_name);
-		setSlice(slice);
+		open(input_red);
 		run("Set Measurements...", "mean stack display redirect=None decimal=9");
 		roiManager("measure");
 		IJ.renameResults("red_measurments");
+		
+		run("Set Measurements...", "mean min display redirect=None decimal=9");
+		selectWindow(cellmask_image);
+		for (j = 0; j < count; j++) {
+    		x = Table.get("X",j,"ROI positions");
+    		y = Table.get("Y",j,"ROI positions");
+    		sample = Table.get("Frame",j,"ROI positions");
+    		z = Table.get("Slice",j,"ROI positions");
+    		Stack.setPosition(1, z%3, sample);
+    		makeRectangle(um2px(x,pixelWidth)-box_size/2, um2px(y,pixelWidth)-box_size/2, box_size, box_size);
+			Roi.setPosition(1, z%3, sample);
+			run("Measure");
+		}
+		IJ.renameResults("cell_labels");
+		
+		//organise results
 		row_number=0;
 		for (j = 0; j < count; j++) {
 			meancell=Table.get("Mean",j,"cell_labels");
@@ -72,6 +71,7 @@
 				roi=split(roi_label,":");
 				red_mean=Table.get("Mean",j,"red_measurments");
 				blue_mean=Table.get("Mean",j,"blue_measurments");
+				slice=Table.get("Slice",j,"blue_measurments");
 				Table.set("ROI name",row_number,roi[1],subname);
 				Table.set("Slice",row_number,slice+1,subname);
 				Table.set("red_gfac_intensity",row_number,red_mean,subname);
@@ -96,7 +96,6 @@
 		selectWindow(subname);
 		run("Close");
 		roiManager("reset");
-	}
 
 
 function um2px(x,pixelWidth){
