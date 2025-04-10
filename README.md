@@ -9,15 +9,15 @@ Requires: [MorphoLibJ](https://imagej.net/plugins/morpholibj), [MultiStackReg](h
 
 Register the image stacks and concatenate the different stacks to a single hyperstack. Run this before Auto_cellseg.
 
-## Auto_cellseg
+## 2. Auto_cellseg
 
 Uses cellpose to automatically segment cells. Need to run this before generateGfacAndGPmaps.
 
-## generateGfacAndGPmaps
+## 3. generateGfacAndGPmaps
 
 Takes blue and red image stacks and and calculated gfactor and gpmaps. Need to run this before selectRois.
 
-## selectRois
+## 4. selectRois
 
 Allows the users to use the multipoint tool to choose place square ROIs in the cells to measure intensity in blue and red_gfac images and create a table for plotting.
 
